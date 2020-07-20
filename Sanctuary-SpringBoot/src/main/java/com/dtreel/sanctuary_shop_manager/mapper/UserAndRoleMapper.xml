@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dtreel.sanctuary_shop_manager.mapper.UserAndRoleMapper">
+    <resultMap id="UserAndRoleDOResultMap" type="com.dtreel.sanctuary_shop_manager.domain.eneity.UserAndRoleDO">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="user_id" property="userId" jdbcType="INTEGER"/>
+        <result column="role_id" property="roleId" jdbcType="INTEGER"/>
+    </resultMap>
+    <insert id="insertUserRole">
+        INSERT INTO t_user_role(user_id,role_id)
+        VALUES
+        <foreach collection="roles" item="role" separator="," open="(" close=")">
+            #{userId},#{role.id}
+        </foreach>
+    </insert>
+    <insert id="insertUserRoleByUserIdAndRoleId">
+        INSERT INTO t_user_role(user_id, role_id)
+        values
+        <foreach collection="addRoleIds" item="addRoleId" separator=",">
+            (#{userId},#{addRoleId})
+        </foreach>
+    </insert>
+    <delete id="deleteRoleByUserIdAndRoleId">
+        DELETE FROM t_user_role
+        WHERE user_id=#{userId}
+        AND role_id in
+        <foreach collection="deleteRoleIds" item="deleteRoleId" open="(" close=")" separator=",">
+            #{deleteRoleId}
+        </foreach>
+    </delete>
+    <delete id="deleteRoleByUserId">
+        DELETE FROM t_user_role
+        WHERE user_id = #{id}
+    </delete>
+</mapper>

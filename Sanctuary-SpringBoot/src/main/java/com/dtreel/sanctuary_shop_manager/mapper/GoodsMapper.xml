@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dtreel.sanctuary_shop_manager.mapper.GoodsMapper">
+    <resultMap id="GoodsDOResultMap" type="com.dtreel.sanctuary_shop_manager.domain.eneity.GoodsDO">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="cost" property="cost" jdbcType="DECIMAL"/>
+        <result column="price" property="price" jdbcType="DECIMAL"/>
+        <result column="inventory" property="inventory" jdbcType="INTEGER"/>
+        <result column="profit" property="profit" jdbcType="DECIMAL"/>
+        <result column="note" property="note" jdbcType="VARCHAR"/>
+        <association property="sort" javaType="com.dtreel.sanctuary_shop_manager.domain.eneity.SortDO">
+            <id column="sort_id" property="id" jdbcType="INTEGER"/>
+            <result column="sort_name" property="name" jdbcType="VARCHAR"/>
+        </association>
+    </resultMap>
+    <insert id="insertGoods" parameterType="com.dtreel.sanctuary_shop_manager.domain.eneity.GoodsDO">
+        INSERT INTO t_goods
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                name,
+            <if test="sort != null">
+                sort_id,
+            </if>
+                cost,
+                price,
+                inventory,
+                profit,
+            <if test="note != ''">
+                note,
+            </if>
+        </trim>
+        VALUES
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                #{name,jdbcType=VARCHAR},
+            <if test="sort != null">
+                #{sort.id,jdbcType=INTEGER},
+            </if>
+                #{cost,jdbcType=DECIMAL},
+                #{price,jdbcType=DECIMAL},
+                #{inventory,jdbcType=INTEGER},
+                #{profit,jdbcType=DECIMAL},
+            <if test="note != ''">
+                #{note,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateGoods">
+        UPDATE t_goods
+        <set>
+            <if test="name != null">
+                name=#{name,jdbcType=VARCHAR},
+            </if>
+            <if test="sort.id != null">
+                sort_id=#{sort.id,jdbcType=INTEGER},
+            </if>
+            <if test="cost != null">
+                cost=#{cost,jdbcType=DECIMAL},
+            </if>
+            <if test="price != null">
+                price=#{price,jdbcType=DECIMAL},
+            </if>
+            <if test="profit != null">
+                profit=#{profit,jdbcType=DECIMAL},
+            </if>
+            <if test="inventory != null">
+                inventory=#{inventory,jdbcType=INTEGER},
+            </if>
+            <if test="note != null">
+                note=#{note,jdbcType=VARCHAR},
+            </if>
+        </set>
+        WHERE id=#{id}
+    </update>
+    <update id="updateGoodsInventory">
+         UPDATE t_goods
+         SET inventory=#{inventory}
+         where id=#{id}
+    </update>
+    <delete id="deleteGoodsById">
+        DELETE FROM t_goods
+        where id = #{id}
+    </delete>
+    <delete id="deleteGoodsByIds">
+        DELETE FROM t_goods
+        where id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getGoodsPageData" resultType="com.dtreel.sanctuary_shop_manager.domain.eneity.GoodsDO" resultMap="GoodsDOResultMap">
+        SELECT tg.`id`,tg.`name`,tgs.`id` AS sort_id,tgs.`name` AS
+        sort_name,tg.`cost`,tg.`price`,tg.`inventory`,tg.`profit`,tg.`note`
+        FROM t_goods AS tg,t_goods_sort AS tgs
+        WHERE tg.`sort_id`=tgs.`id`
+        <if test="keyword != null and keyword != ''">
+            AND CONCAT(IFNULL(tg.`id`,''),IFNULL(tg.`name`,'')) LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        ORDER BY tg.`id`,tgs.`id`
+        LIMIT #{page},#{size}
+    </select>
+    <select id="getGoodsTotalByKeyword" resultType="java.lang.Long">
+        SELECT count(*)
+        FROM t_goods
+        <if test="keyword != null and keyword != ''">
+            where CONCAT(IFNULL(t_goods.`id`,''),IFNULL(t_goods.`name`,'')) like concat('%', #{keyword}, '%')
+        </if>
+    </select>
+    <select id="getGoodsById" resultType="com.dtreel.sanctuary_shop_manager.domain.eneity.GoodsDO">
+        SELECT t_goods.`id`,t_goods.`name`,t_goods.`price`,t_goods.`profit`,t_goods.`inventory`
+        FROM t_goods
+        WHERE t_goods.`id` = #{goodsId}
+    </select>
+</mapper>

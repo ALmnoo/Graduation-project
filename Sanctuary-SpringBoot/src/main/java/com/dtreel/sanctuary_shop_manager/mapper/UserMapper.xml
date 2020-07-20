@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dtreel.sanctuary_shop_manager.mapper.UserMapper">
+    <resultMap id="UserDOResultMap" type="com.dtreel.sanctuary_shop_manager.domain.eneity.UserDO">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="username" property="username" jdbcType="VARCHAR"/>
+        <result column="password" property="password" jdbcType="VARCHAR"/>
+        <result column="avatar" property="avatar" jdbcType="VARCHAR"/>
+        <result column="owner" property="owner" jdbcType="VARCHAR"/>
+        <result column="gender" property="gender" jdbcType="CHAR"/>
+        <result column="error_num" property="errorNum" jdbcType="INTEGER"/>
+        <result column="allow_time" property="allowTime" jdbcType="TIMESTAMP"/>
+        <result column="note" property="note" jdbcType="VARCHAR"/>
+        <collection property="roles" resultMap="RoleDOResultMap"/>
+    </resultMap>
+    <resultMap id="RoleDOResultMap" type="com.dtreel.sanctuary_shop_manager.domain.eneity.RoleDO">
+        <id column="role_id" property="id" jdbcType="INTEGER"/>
+        <result column="role_name" property="name" jdbcType="VARCHAR"/>
+    </resultMap>
+    <insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="username != ''">
+                username,
+            </if>
+            <if test="password != ''">
+                password,
+            </if>
+            <if test="owner != ''">
+                owner,
+            </if>
+            <if test="gender != ''">
+                gender,
+            </if>
+            <if test="note != ''">
+                note,
+            </if>
+        </trim>
+        Values
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="username != ''">
+                #{username,jdbcType=VARCHAR},
+            </if>
+            <if test="password != ''">
+                #{password,jdbcType=VARCHAR},
+            </if>
+            <if test="owner != ''">
+                #{owner,jdbcType=VARCHAR},
+            </if>
+            <if test="gender != ''">
+                #{gender,jdbcType=VARCHAR},
+            </if>
+            <if test="note != ''">
+                #{note,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <delete id="deleteUser">
+        DELETE FROM t_user
+        WHERE id = #{id}
+    </delete>
+    <select id="getUserByUsername" resultType="com.dtreel.sanctuary_shop_manager.domain.eneity.UserDO">
+        select * from t_user where username = #{username}
+    </select>
+    <select id="listUser" resultMap="UserDOResultMap">
+        SELECT DISTINCT tu.`id`,tu.`username`,tu.`avatar`,tu.`owner`,tu.`gender`,tu.`note`,tr.`id` AS role_id,tr.`name` AS role_name
+        FROM t_user AS tu,t_user_role AS tur,t_role AS tr
+        WHERE tu.`id`!=1 AND tu.`id`=tur.`user_id` AND tur.`role_id`=tr.`id`
+        <if test="keyword != null and keyword != ''">
+            AND CONCAT(IFNULL(tu.`owner`,''),IFNULL(tu.`id`,''),IFNULL(tu.`username`,'')) LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        ORDER BY tu.`id`,tr.`id`
+    </select>
+    <update id="updateUser" parameterType="com.dtreel.sanctuary_shop_manager.domain.eneity.UserDO">
+        UPDATE t_user
+        <set>
+            <if test="owner != null and owner != ''">
+                owner = #{owner,jdbcType=VARCHAR},
+            </if>
+            <if test="note != null">
+                note = #{note,jdbcType=VARCHAR},
+            </if>
+            <if test="errorNum != null">
+                error_num = #{errorNum,jdbcType=INTEGER},
+            </if>
+            <if test="allowTime != null">
+                allow_time = #{allowTime,jdbcType=TIMESTAMP},
+            </if>
+        </set>
+        WHERE id=#{id}
+    </update>
+</mapper>
+

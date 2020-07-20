@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dtreel.sanctuary_shop_manager.mapper.SortMapper">
+    <insert id="insertSort" parameterType="com.dtreel.sanctuary_shop_manager.domain.eneity.SortDO">
+        INSERT INTO t_goods_sort(name)
+        values (#{name})
+    </insert>
+    <update id="updateSort" parameterType="com.dtreel.sanctuary_shop_manager.domain.eneity.SortDO">
+        UPDATE t_goods_sort
+        SET name=#{name}
+        WHERE id=#{id}
+    </update>
+    <delete id="deleteSortById">
+        DELETE FROM t_goods_sort
+        where id=#{id}
+    </delete>
+    <delete id="deleteSortByIds">
+        DELETE FROM t_goods_sort
+        where id in
+        <foreach collection="ids" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <select id="listSort" resultType="com.dtreel.sanctuary_shop_manager.domain.eneity.SortDO">
+        SELECT *
+        FROM t_goods_sort
+        ORDER BY t_goods_sort.`id`
+    </select>
+</mapper>

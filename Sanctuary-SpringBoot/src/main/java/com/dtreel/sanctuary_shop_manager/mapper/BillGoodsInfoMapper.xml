@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dtreel.sanctuary_shop_manager.mapper.BillGoodsInfoMapper">
+    <resultMap id="BillGoodsInfoResultMap" type="com.dtreel.sanctuary_shop_manager.domain.eneity.BillGoodsInfoDO">
+        <id column="id" property="billId" jdbcType="BIGINT"/>
+        <result column="quantity_sold" property="quantitySold" jdbcType="INTEGER"/>
+        <result column="item_sum_price" property="itemSumPrice" jdbcType="DECIMAL"/>
+        <association property="goods" resultMap="GoodsResultMap"/>
+    </resultMap>
+    <resultMap id="GoodsResultMap" type="com.dtreel.sanctuary_shop_manager.domain.eneity.GoodsDO">
+        <id column="goods_id" property="id" jdbcType="INTEGER"/>
+        <result column="goods_name" property="name" jdbcType="VARCHAR"/>
+        <result column="goods_price" property="price" jdbcType="DECIMAL"/>
+        <result column="goods_profit" property="profit" jdbcType="DECIMAL"/>
+    </resultMap>
+  <insert id="insertBillInfo">
+      INSERT INTO t_bill_goods(bill_id, goods_id, quantity_sold,item_sum_price,item_sum_profit)
+      VALUES
+      <foreach collection="billGoodsInfos" item="billGoodsInfo" separator=",">
+          (#{billId}, #{billGoodsInfo.goods.id}, #{billGoodsInfo.quantitySold}, #{billGoodsInfo.itemSumPrice}, #{billGoodsInfo.itemSumProfit})
+      </foreach>
+  </insert>
+    <select id="getGoodsInfo" resultType="com.dtreel.sanctuary_shop_manager.domain.eneity.BillGoodsInfoDO">
+
+    </select>
+</mapper>

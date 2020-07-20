@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dtreel.sanctuary_shop_manager.mapper.MenuMapper">
+    <resultMap id="MainMenuDOResultMap" type="com.dtreel.sanctuary_shop_manager.domain.eneity.MainMenuDO">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="url" property="url" jdbcType="VARCHAR"/>
+        <result column="path" property="path" jdbcType="VARCHAR"/>
+        <result column="component" property="component" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="icon" property="icon" jdbcType="VARCHAR"/>
+        <result column="is_keepAlive" property="keepAlive" jdbcType="TINYINT"/>
+        <result column="is_requireAuth" property="requireAuth" jdbcType="TINYINT"/>
+        <result column="is_enable" property="enable" jdbcType="TINYINT"/>
+        <collection property="children" ofType="com.dtreel.sanctuary_shop_manager.domain.eneity.SubMenuDO" resultMap="SubMenuDOResultMap"/>
+    </resultMap>
+    <resultMap id="SubMenuDOResultMap" type="com.dtreel.sanctuary_shop_manager.domain.eneity.SubMenuDO">
+        <id column="sub_id" property="id" jdbcType="INTEGER"/>
+        <result column="sub_url" property="url" jdbcType="VARCHAR"/>
+        <result column="sub_path" property="path" jdbcType="VARCHAR"/>
+        <result column="sub_component" property="component" jdbcType="VARCHAR"/>
+        <result column="sub_name" property="name" jdbcType="VARCHAR"/>
+        <result column="sub_icon" property="icon" jdbcType="VARCHAR"/>
+        <result column="sub_is_keepAlive" property="keepAlive" jdbcType="TINYINT"/>
+        <result column="sub_is_requireAuth" property="requireAuth" jdbcType="TINYINT"/>
+        <result column="sub_is_enable" property="enable" jdbcType="TINYINT"/>
+        <collection property="roles" ofType="com.dtreel.sanctuary_shop_manager.domain.eneity.RoleDO">
+            <id column="role_id" property="id" jdbcType="INTEGER"/>
+            <result column="role_name" property="name" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+    <select id="listMainMenuByUserId" resultMap="MainMenuDOResultMap">
+        SELECT DISTINCT
+            mm.*,sm.`id` AS sub_id,sm.`url` AS sub_url,sm.`path` AS sub_path,sm.`component` AS sub_component,
+            sm.`name` AS sub_name,sm.`icon` AS sub_icon,sm.`is_keepAlive` AS sub_is_keepAlive,
+            sm.`is_requireAuth` AS sub_is_requireAuth,sm.`is_enable` AS sub_is_enable
+        FROM
+            t_user_role AS ur,t_role_menu AS rm,t_main_menu AS mm,t_sub_menu AS sm
+        WHERE
+            ur.`user_id`=#{userId} AND ur.`role_id`=rm.`role_id` AND rm.`sub_menu_id`=sm.`id` AND sm.`parentId`=mm.`id`
+        ORDER BY
+            mm.`id`,sm.`id`
+    </select>
+    <select id="listSubMenuWithRole" resultMap="SubMenuDOResultMap">
+        SELECT DISTINCT
+	        sm.`id` AS sub_id,sm.`url` AS sub_url,sm.`path` AS sub_path,sm.`component` AS sub_component,
+	        sm.`name` AS sub_name,sm.`icon` AS sub_icon,sm.`is_keepAlive` AS sub_is_keepAlive,
+	        sm.`is_requireAuth` AS sub_is_requireAuth,sm.`parentId` AS sub_parentId,sm.`is_enable` AS sub_is_enable,
+	        tr.`id` AS role_id,tr.`name` AS role_name
+        FROM
+            t_sub_menu AS sm,t_role_menu AS rm,t_role AS tr
+        WHERE
+            sm.`id` = rm.`sub_menu_id` AND rm.`role_id`=tr.`id`
+        ORDER BY
+            tr.`id`,sm.`id`
+    </select>
+    <!--<select id="getAllMenuWithRole" resultMap="getAllMenuWithRole">-->
+    <!--    SELECT tm.`name`,tmm.`name` AS main_menu_name,tsm.`id` AS sub_menu_id,tsm.`name` AS sub_menu_name-->
+    <!--    FROM t_role_menu AS trm,t_sub_menu AS tsm,t_main_menu AS tmm,t_menu AS tm,t_role AS tr-->
+    <!--    WHERE trm.`sub_m_id`=tsm.`id` AND tsm.`parentId`=tmm.`id` AND tmm.`parent_id`=tm.`id` AND trm.`r_id`=tr.`id`-->
+    <!--    ORDER BY tr.`id`,tm.`id`,tmm.`id`,tsm.`id`-->
+    <!--</select>-->
+    <!--<select id="getMenuWithRoleId" resultType="java.lang.Integer">-->
+    <!--    SELECT t_role_menu.`sub_m_id`-->
+    <!--    FROM t_role_menu,t_role-->
+    <!--    WHERE t_role.`id`=t_role_menu.`r_id` AND t_role.`id`=#{roleId}-->
+    <!--    ORDER BY t_role_menu.`sub_m_id`-->
+    <!--</select>-->
+</mapper>

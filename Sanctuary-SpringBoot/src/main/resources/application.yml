@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    username: root
+    password: root
+    url: jdbc:mysql://localhost:3306/sanctuary_shop_manager?useSSL=false&useUnicode=true&characterEncoding=utf8&serverTimeZone=Asia/Shanghai
+server:
+  port: 8090
+  servlet:
+    session:
+      timeout: P14DT2H
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dtreel.sanctuary_shop_manager.mapper.BillMapper">
+    <resultMap id="BillResultMap" type="com.dtreel.sanctuary_shop_manager.domain.eneity.BillDO">
+        <id column="id" property="id" jdbcType="BIGINT"/>
+        <result column="total_sales" property="totalSales" jdbcType="INTEGER"/>
+        <result column="total_price" property="totalPrice" jdbcType="DECIMAL"/>
+        <result column="total_profit" property="totalProfit" jdbcType="DECIMAL"/>
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP"/>
+        <result column="is_work" property="work" jdbcType="BIT"/>
+        <result column="note" property="note" jdbcType="VARCHAR"/>
+        <association property="user" resultMap="UserDOResultMap"/>
+        <collection property="billGoodsInfos" resultMap="BillGoodsInfoDO"/>
+    </resultMap>
+
+    <resultMap id="UserDOResultMap" type="com.dtreel.sanctuary_shop_manager.domain.eneity.UserDO">
+        <id column="user_id" property="id" jdbcType="INTEGER"/>
+        <result column="user_owner" property="owner" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="BillGoodsInfoDO" type="com.dtreel.sanctuary_shop_manager.domain.eneity.BillGoodsInfoDO">
+        <result column="goods_sold" property="quantitySold" jdbcType="INTEGER"/>
+        <result column="goods_sum_price" property="itemSumPrice" jdbcType="DECIMAL"/>
+        <result column="goods_sum_profit" property="itemSumProfit" jdbcType="DECIMAL"/>
+        <association property="goods" resultMap="GoodsDOResultMap"/>
+    </resultMap>
+
+    <resultMap id="GoodsDOResultMap" type="com.dtreel.sanctuary_shop_manager.domain.eneity.GoodsDO">
+        <id column="goods_id" property="id" jdbcType="INTEGER"/>
+        <result column="goods_name" property="name" jdbcType="VARCHAR"/>
+    </resultMap>
+    <insert id="insertBill">
+        INSERT INTO t_bill(total_sales,total_price,total_profit,create_time,user_id)
+        values (#{totalSales},#{totalPrice},#{totalProfit},#{createTime},#{user.id})
+    </insert>
+    <update id="updateBill">
+        UPDATE t_bill
+        <set>
+            is_work=#{work,jdbcType=BIT},
+            <if test="note != '' and note != null">
+                note=#{note,jdbcType=VARCHAR},
+            </if>
+        </set>
+        WHERE id=#{id}
+    </update>
+    <select id="listBillByDate" resultMap="BillResultMap">
+        SELECT tb.`id`,tg.`id` AS goods_id,tg.`name` AS goods_name,
+        tbg.`quantity_sold` AS goods_sold,tbg.`item_sum_price` AS goods_sum_price,tbg.`item_sum_profit` AS goods_sum_profit,
+        tb.`total_sales`,tb.`total_price`,tb.`total_profit`,tb.`is_work`,tb.`note`,
+        tu.`id` AS user_id,tu.`owner` AS user_owner,
+        tb.`create_time`
+        FROM t_bill AS tb,t_bill_goods AS tbg,t_goods AS tg,t_user AS tu
+        WHERE tb.`id`=tbg.`bill_id` AND tbg.`goods_id` = tg.`id` AND tb.`user_id`=tu.`id`
+        <if test="dates !=null and dates.length > 0">
+            AND DATE(tb.`create_time`) BETWEEN #{dates[0]} AND #{dates[1]}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND CONCAT(IFNULL(tb.`id`,''),IFNULL(tu.`owner`,'')) LIKE CONCAT('%',#{keyword},'%')
+        </if>
+        ORDER BY tb.`create_time` DESC,tb.`id` DESC,tg.`id`
+    </select>
+    <select id="getBillCalculateInfo"
+            resultType="com.dtreel.sanctuary_shop_manager.domain.eneity.BillCalculateInfoDO">
+        SELECT
+        COUNT(tb.`id`) AS totalBill,
+        SUM(tb.`total_profit`) AS profit,
+        SUM(tb.`total_price`) AS price,
+        SUM(tb.`total_sales`) AS sales
+        FROM t_bill AS tb
+        WHERE
+        tb.`is_work` = 1
+        <if test="dates !=null and dates.length > 0">
+            AND DATE(tb.`create_time`) BETWEEN #{dates[0]} AND #{dates[1]}
+        </if>
+    </select>
+    <select id="getNextBillId" resultType="java.lang.Integer">
+        SELECT AUTO_INCREMENT AS bill_id
+        FROM information_schema.`TABLES`
+        WHERE TABLE_SCHEMA='sanctuary_shop_manager' AND TABLE_NAME='t_bill';
+    </select>
+    <select id="getBillCreatTimeById" resultType="java.util.Date">
+        SELECT t_bill.create_time
+        FROM t_bill
+        WHERE t_bill.id=#{id}
+    </select>
+</mapper>
